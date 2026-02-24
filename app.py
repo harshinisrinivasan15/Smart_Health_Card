@@ -9,7 +9,7 @@ app = Flask(__name__)
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="root",
+    password="Dharsh!7",
     database="smart_health_card"
 )
 cursor = db.cursor()
@@ -105,6 +105,55 @@ def delete_doctor(id):
     cursor.execute(sql, (id,))
     db.commit()
     return redirect('/admindoctor')
+
+#Doctor Login
+@app.route('/doctorlogin', methods=['GET', 'POST'])
+def doctor_login():
+    if request.method == 'POST':
+        email = request.form['email']
+
+        cursor.execute("SELECT doctor_id, name FROM doctors WHERE email=%s", (email,))
+        doctor = cursor.fetchone()
+
+        if doctor:
+            return redirect(f"/doctor/{doctor[0]}")
+        else:
+            return "Invalid Doctor"
+
+    return render_template("doctor_login.html")
+
+    # Doctor Dashboard
+@app.route('/doctor/<doctor_id>', methods=['GET', 'POST'])
+def doctor_dashboard(doctor_id):
+    patient = None
+    success = request.args.get('success')
+
+    if request.method == 'POST':
+        patient_id = request.form['patient_id']
+        cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (patient_id,))
+        patient = cursor.fetchone()
+
+    return render_template("doctor_dashboard.html",
+                           patient=patient,
+                           doctor_id=doctor_id,
+                           success=success)
+# Prescription Adding
+from flask import jsonify
+
+@app.route('/add_prescription/<doctor_id>', methods=['POST'])
+def add_prescription(doctor_id):
+    patient_id = request.form['patient_id']
+    diagnosis = request.form['diagnosis']
+    prescription = request.form['prescription']
+
+    cursor.execute("""
+        INSERT INTO prescriptions (patient_id, doctor_id, diagnosis, prescription, date)
+        VALUES (%s, %s, %s, %s, CURDATE())
+    """, (patient_id, doctor_id, diagnosis, prescription))
+    
+    db.commit()
+
+    return jsonify({"message": "Prescription Added Successfully!"})
 
 if __name__ == '__main__':
     app.run(debug=True)
