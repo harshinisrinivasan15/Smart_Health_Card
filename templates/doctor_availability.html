@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Doctor Availability</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #e9ecef;
+        }
+
+        header {
+            background-color: #66bb6a;
+            color: white;
+            text-align: center;
+            padding: 18px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 85%;
+            margin: 30px auto;
+        }
+
+        .card {
+            background: #f1f1f1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        input, select {
+            padding: 6px;
+            margin-right: 10px;
+            margin-top: 8px;
+        }
+
+        button {
+            background: #66bb6a;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin-top: 15px;
+        }
+
+        th, td {
+            background: #e0e0e0;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>Smart Health Card</header>
+
+<div class="container">
+
+    <h2>Doctor Availability</h2>
+
+    <!-- ADD DOCTOR FORM -->
+    <div class="card">
+        <h3>Add Doctor</h3>
+
+        <form action="/admindoctor" method="POST">
+            Doctor Name <input type="text" name="name" required>
+            Email <input type="email" name="email" required>
+            Specialization <input type="text" name="specialization" required>
+
+            Status
+            <select name="status">
+                <option value="Available">Available</option>
+                <option value="Unavailable">Unavailable</option>
+            </select>
+
+            <br><br>
+            <button type="submit">Add Doctor</button>
+        </form>
+    </div>
+
+    <!-- DOCTOR LIST -->
+    <div class="card">
+        <h3>Doctor List</h3>
+
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Specialization</th>
+                <th>Status</th>
+                <th>Delete</th>
+            </tr>
+
+            {% for d in doctors %}
+            <tr>
+                <td>{{ d[1] }}</td>   <!-- doctor_id -->
+                <td>{{ d[2] }}</td>   <!-- name -->
+                <td>{{ d[3] }}</td>   <!-- email -->
+                <td>{{ d[4] }}</td>   <!-- specialization -->
+                <td>{{ d[5] }}</td>   <!-- status -->
+                <td>
+                <a href="/delete_doctor/{{d[0]}}" style="color:red;font-size:20px;text-decoration:none">
+                    ❌
+                </a>
+                </td>
+            </tr>
+            {% endfor %}
+
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>
