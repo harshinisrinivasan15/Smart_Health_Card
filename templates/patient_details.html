@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Patient Details</title>
+<style>
+body{font-family:Arial;background:#f4f6f9;margin:0}
+
+.header{
+background:#6cc070;
+color:white;
+text-align:center;
+padding:15px;
+font-size:28px
+}
+
+/* CENTER PAGE */
+.wrapper{
+display:flex;
+justify-content:center;
+padding-top:40px;
+}
+
+.main{
+width:85%;
+max-width:1100px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:8px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+margin-bottom:20px
+}
+
+input,select{
+width:100%;
+padding:8px;
+margin:8px 0;
+border:1px solid #ccc;
+border-radius:5px
+}
+
+button{
+background:#6cc070;
+color:white;
+padding:10px;
+border:none;
+border-radius:5px;
+width:100%
+}
+
+.healthcard{
+background:#b7d6e5;
+padding:20px;
+border-radius:8px;
+text-align:center
+}
+
+.row{
+display:flex;
+gap:20px
+}
+</style>
+</head>
+
+<body>
+
+<B><div class="header">Smart Health Card</div></B>
+
+<div class="wrapper">
+<div class="main">
+
+<h2>Patient Details</h2>
+
+<div class="row">
+
+<!-- FORM -->
+<div class="card" style="flex:1">
+<h3>Enter Patient Details</h3>
+
+<form method="POST">
+
+<label>Name</label>
+<input type="text" name="name" required>
+
+<label>DOB</label>
+<input type="date" name="dob" required>
+
+<label>Mobile</label>
+<input type="text" name="mobile" required>
+
+<label>Height</label>
+<input type="text" name="height">
+
+<label>Weight</label>
+<input type="text" name="weight">
+
+<label>Reason</label>
+<input type="text" name="reason">
+
+<label>Assigned Doctor</label>
+<select name="doctor" required>
+<option value="">Select Doctor</option>
+
+{% for d in doctors %}
+<option value="{{d[0]}}">{{d[1]}}</option>
+{% endfor %}
+
+</select>
+
+<button type="submit">Create</button>
+
+</form>
+</div>
+
+<!-- HEALTH CARD -->
+<div class="card" style="flex:1">
+<h3>Patient Health Card</h3>
+
+{% if patients %}
+{% set p = patients[-1] %}
+<div class="healthcard">
+<p><b>Name:</b> {{p[2]}}</p>
+<p><b>DOB:</b> {{p[3]}}</p>
+<p><b>Mobile:</b> {{p[4]}}</p>
+
+<h2>{{p[1]}}</h2>
+
+<img src="/static/qr_codes/{{p[1]}}.png" width="150">
+
+<br><br>
+<a href="/download/{{p[1]}}">
+    <button>Download Card</button>
+</a>
+</div>
+{% endif %}
+
+</div>
+
+</div>
+</div>
+</div>
+
+</body>
+</html>

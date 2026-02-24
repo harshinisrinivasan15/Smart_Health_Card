@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #eef1f5;
+        }
+
+        .header {
+            background: #69b36d;
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* CENTER EVERYTHING */
+       .wrapper {
+        display: flex;
+        justify-content: center;
+
+        /* MOVE CONTENT UP */
+        align-items: flex-start;
+  
+        height: calc(100vh - 70px);
+         padding-top: 60px;  /* adjust this value if needed */
+        }
+
+        .content {
+            text-align: center;
+        }
+
+        .cards {
+            display: flex;
+            gap: 40px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .card {
+            background: #f7f7f7;
+            padding: 30px;
+            width: 420px;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .card h3 {
+            color: #58a55c;
+            font-size: 24px;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 18px;
+            background: #69b36d;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #4f9a54;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">Smart Health Card - Admin Portal</div>
+
+<div class="wrapper">
+    <div class="content">
+        <h2>Welcome, Admin</h2>
+        <p>Select an option to manage the system.</p>
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Patients</h3>
+                <p>Add patients, generate Health ID, QR & download card.</p>
+                <a href="/adminpatient" class="btn">Go to Patient Details</a>
+            </div>
+
+            <div class="card">
+                <h3>Doctors</h3>
+                <p>Add doctors and update their availability status.</p>
+                <a href="/admindoctor" class="btn">Go to Doctor Availability</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
