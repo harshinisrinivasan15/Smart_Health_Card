@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Doctor Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #eef1f5;
+        }
+
+        .header {
+            background: #69b36d;
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 900px;
+        }
+
+        .card {
+            background: #f7f7f7;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        h2, h3 {
+            color: #58a55c;
+        }
+
+        input[type="text"], textarea {
+            width: 95%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 18px;
+            background: #69b36d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #4f9a54;
+        }
+
+        .details p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">Smart Health Card - Doctor Dashboard</div>
+{% if success %}
+<script>
+    alert("Prescription Added Successfully!");
+</script>
+{% endif %}
+<div class="wrapper">
+    <div class="container">
+
+        <!-- Search Patient -->
+        <div class="card">
+            <h2>Search Patient</h2>
+            <form method="POST">
+                <input type="text" name="patient_id" placeholder="Enter Patient Health ID (e.g., PAT001)" required>
+                <br>
+                <button type="submit" class="btn">Search</button>
+            </form>
+        </div>
+
+        {% if patient %}
+        <!-- Patient Details -->
+        <div class="card">
+            <h3>Patient Details</h3>
+            <div class="details">
+                <p><strong>Name:</strong> {{ patient[2] }}</p>
+                <p><strong>DOB:</strong> {{ patient[3] }}</p>
+                <p><strong>Mobile:</strong> {{ patient[4] }}</p>
+                <p><strong>Height:</strong> {{ patient[5] }}</p>
+                <p><strong>Weight:</strong> {{ patient[6] }}</p>
+                <p><strong>Reason:</strong> {{ patient[7] }}</p>
+                <p><strong>Assigned Doctor:</strong> {{ patient[8] }}</p>
+            </div>
+        </div>
+
+        <!-- Add Prescription -->
+        <div class="card">
+            <h3>Add Prescription</h3>
+            <form id="prescriptionForm">
+    <input type="hidden" name="patient_id" value="{{ patient[1] }}">
+
+    <label>Diagnosis</label><br>
+    <textarea name="diagnosis" required></textarea><br>
+
+    <label>Prescription</label><br>
+    <textarea name="prescription" required></textarea><br>
+
+    <button type="submit" class="btn">Save Prescription</button>
+</form>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+<script>
+document.getElementById("prescriptionForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch("/add_prescription/{{ doctor_id }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        document.getElementById("prescriptionForm").reset();
+    })
+    .catch(error => {
+        alert("Error saving prescription.");
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Patient Records</title>
+</head>
+<body>
+
+<h2>Patient Details</h2>
+
+<p><b>Name:</b> {{patient[2]}}</p>
+<p><b>DOB:</b> {{patient[3]}}</p>
+<p><b>Mobile:</b> {{patient[4]}}</p>
+
+<h2>Prescriptions</h2>
+
+{% if prescriptions %}
+    {% for p in prescriptions %}
+        <hr>
+        <p><b>Doctor ID:</b> {{p[2]}}</p>
+        <p><b>Diagnosis:</b> {{p[3]}}</p>
+        <p><b>Prescription:</b> {{p[4]}}</p>
+        <p><b>Date:</b> {{p[5]}}</p>
+    {% endfor %}
+{% else %}
+    <p>No prescriptions found.</p>
+{% endif %}
+
+</body>
+</html>
