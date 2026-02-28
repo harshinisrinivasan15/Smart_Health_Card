@@ -11,7 +11,7 @@ app.secret_key = "healthcard_secret_key"
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="Hanii@31_4",
+    password="Dharsh!7",
     database="smart_health_card"
 )
 cursor = db.cursor()
