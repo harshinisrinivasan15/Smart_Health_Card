@@ -9,7 +9,7 @@ app = Flask(__name__)
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="Dharsh!7",
+    password="root",
     database="smart_health_card"
 )
 cursor = db.cursor()
