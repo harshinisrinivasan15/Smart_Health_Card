@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Patient Records - Smart Health Card</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #eef1f5;
+}
+
+.header {
+    background: #69b36d;
+    color: white;
+    padding: 18px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.container {
+    width: 85%;
+    max-width: 900px;
+}
+
+h2 {
+    color: #58a55c;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #69b36d;
+    padding-bottom: 10px;
+}
+
+.card {
+    background: #f7f7f7;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+}
+
+.patient-info {
+    background: #e8f0fe;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border-left: 5px solid #69b36d;
+}
+
+.patient-info p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.patient-info strong {
+    color: #333;
+    min-width: 120px;
+    display: inline-block;
+}
+
+.prescription-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.prescription-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.prescription-card p {
+    margin: 8px 0;
+}
+
+.prescription-card strong {
+    color: #58a55c;
+    min-width: 100px;
+    display: inline-block;
+}
+
+.prescription-date {
+    color: #888;
+    font-size: 14px;
+    text-align: right;
+    margin-top: 10px;
+    border-top: 1px dashed #ccc;
+    padding-top: 8px;
+}
+
+.no-data {
+    text-align: center;
+    color: #777;
+    padding: 40px;
+    font-size: 16px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 20px 0;
+}
+</style>
+</head>
+<body>
+
+<div class="header">Smart Health Card - Patient Records</div>
+
+<div class="wrapper">
+    <div class="container">
+
+        <div class="card">
+            <h2>Patient Details</h2>
+            
+            {% if patient %}
+            <div class="patient-info">
+                <p><strong>Name:</strong> {{patient[2]}}</p>
+                <p><strong>DOB:</strong> {{patient[3]}}</p>
+                <p><strong>Mobile:</strong> {{patient[4]}}</p>
+                <p><strong>Health ID:</strong> {{patient[1]}}</p>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <p>No patient information available.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2>Prescriptions</h2>
+            
+            {% if prescriptions %}
+                {% for p in prescriptions %}
+                <div class="prescription-card">
+                    <p><strong>Doctor ID:</strong> {{p[2]}}</p>
+                    <p><strong>Diagnosis:</strong> {{p[3]}}</p>
+                    <p><strong>Prescription:</strong> {{p[4]}}</p>
+                    <div class="prescription-date">
+                        <strong>Date:</strong> {{p[5]}}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-data">
+                    <p>No prescriptions found for this patient.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>OTP Verification - Smart Health Card</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #eef1f5;
+}
+
+.header {
+    background: #69b36d;
+    color: white;
+    padding: 18px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: calc(100vh - 70px);
+    padding-top: 100px;
+}
+
+.card {
+    background: #f7f7f7;
+    padding: 40px;
+    width: 450px;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.card h2 {
+    color: #58a55c;
+    margin-bottom: 20px;
+    font-size: 28px;
+}
+
+.card p {
+    color: #555;
+    margin-bottom: 30px;
+    font-size: 16px;
+    background: #e8f0fe;
+    padding: 12px;
+    border-radius: 6px;
+}
+
+input[type="text"] {
+    width: 90%;
+    padding: 12px;
+    margin: 10px 0 25px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    text-align: center;
+    letter-spacing: 2px;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #69b36d;
+    box-shadow: 0 0 5px rgba(105, 179, 109, 0.3);
+}
+
+.btn {
+    background: #69b36d;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: auto;
+    min-width: 150px;
+    transition: background 0.3s;
+}
+
+.btn:hover {
+    background: #4f9a54;
+}
+
+.info-text {
+    font-size: 14px;
+    color: #777;
+    margin-top: 25px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.resend-link {
+    color: #69b36d;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.resend-link:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+
+<div class="header">Smart Health Card - OTP Verification</div>
+
+<div class="wrapper">
+    <div class="card">
+        <h2>Verify OTP</h2>
+        <p>OTP has been sent to your registered mobile number</p>
+        
+        <form method="POST">
+            <input type="text" name="entered_otp" placeholder="Enter 6-digit OTP" maxlength="6" required>
+            <br>
+            <button type="submit" class="btn">Verify OTP</button>
+        </form>
+        
+        <div class="info-text">
+            Didn't receive OTP? <a href="#" class="resend-link">Resend OTP</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

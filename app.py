@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, redirect,send_file
+from flask import Flask, render_template, request, redirect, send_file, session
+import random
 import mysql.connector
 import qrcode
 import os
 
 app = Flask(__name__)
+app.secret_key = "healthcard_secret_key"
 
 # MySQL connection
 db = mysql.connector.connect(
@@ -155,5 +157,53 @@ def add_prescription(doctor_id):
 
     return jsonify({"message": "Prescription Added Successfully!"})
 
+# 👤 PATIENT PORTAL WITH OTP
+@app.route('/patient_portal', methods=['GET', 'POST'])
+def patient_portal():
+
+    if request.method == 'POST':
+
+        # STEP 1 → Health ID submitted
+        if 'patient_id' in request.form:
+            patient_id = request.form['patient_id']
+
+            cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (patient_id,))
+            patient = cursor.fetchone()
+
+            if patient:
+                otp = random.randint(1000, 9999)
+                session['otp'] = str(otp)
+                session['patient_id'] = patient_id
+
+                print("Generated OTP:", otp)  # See OTP in terminal
+
+                return render_template("verify_otp.html")
+
+            else:
+                return "Invalid Health ID"
+
+        # STEP 2 → OTP submitted
+        elif 'entered_otp' in request.form:
+            entered_otp = request.form['entered_otp']
+
+            if entered_otp == session.get('otp'):
+
+                patient_id = session.get('patient_id')
+
+                cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (patient_id,))
+                patient = cursor.fetchone()
+
+                cursor.execute("SELECT * FROM prescriptions WHERE patient_id=%s", (patient_id,))
+                prescriptions = cursor.fetchall()
+
+                return render_template("patient_records.html",
+                                       patient=patient,
+                                       prescriptions=prescriptions)
+
+            else:
+                return "Invalid OTP"
+
+    return render_template("patient_portal.html")
 if __name__ == '__main__':
+   
     app.run(debug=True)
