@@ -102,6 +102,25 @@ input[type="text"]:focus {
 .resend-link:hover {
     text-decoration: underline;
 }
+
+.otp-input {
+    width: 220px;
+    padding: 18px;
+    font-size: 34px;
+    text-align: center;
+    letter-spacing: 14px;
+    border-radius: 10px;
+    border: 2px solid #69b36d;
+    outline: none;
+    margin-bottom: 20px;
+    background: #fff;
+    transition: 0.3s;
+}
+
+.otp-input:focus {
+    box-shadow: 0 0 10px rgba(105, 179, 109, 0.6);
+    border-color: #4f9a54;
+}
 </style>
 </head>
 <body>
@@ -113,14 +132,19 @@ input[type="text"]:focus {
         <h2>Verify OTP</h2>
         <p>OTP has been sent to your registered mobile number</p>
         
-        <form method="POST">
-            <input type="text" name="entered_otp" placeholder="Enter 6-digit OTP" maxlength="6" required>
+        <form action="/verify_otp" method="POST">
+            <input type="text"
+                name="entered_otp"
+                placeholder="Enter OTP"
+                maxlength="4"
+                class="otp-input"
+                required>
             <br>
             <button type="submit" class="btn">Verify OTP</button>
         </form>
         
         <div class="info-text">
-            Didn't receive OTP? <a href="#" class="resend-link">Resend OTP</a>
+            Didn't receive OTP? <a href="/resend_otp" class="resend-link">Resend OTP</a>
         </div>
     </div>
 </div>

@@ -19,7 +19,17 @@ cursor = db.cursor()
 # 🏠 FRONT PAGE (3 portals)
 @app.route('/')
 def home():
-    return render_template("home.html")
+
+    # Get most recently added patient
+    cursor.execute("SELECT patient_id FROM patients ORDER BY id DESC LIMIT 1")
+    latest_patient = cursor.fetchone()
+
+    if latest_patient:
+        latest_qr = latest_patient[0] + ".png"
+    else:
+        latest_qr = "PAT001.png"  # default if no patient
+
+    return render_template("home.html", latest_qr=latest_qr)
 
 # 🛠 ADMIN DASHBOARD
 @app.route('/admin')
@@ -51,7 +61,8 @@ def adminpatient():
         db.commit()
 
         # Generate QR
-        qr = qrcode.make(patient_id)
+        url = f"http://192.168.1.12:5000/emergency/{patient_id}"
+        qr = qrcode.make(url)
         qr.save(f"static/qr_codes/{patient_id}.png")
 
         return redirect('/adminpatient')
@@ -147,63 +158,105 @@ def add_prescription(doctor_id):
     patient_id = request.form['patient_id']
     diagnosis = request.form['diagnosis']
     prescription = request.form['prescription']
+    severity = request.form['severity']
 
     cursor.execute("""
-        INSERT INTO prescriptions (patient_id, doctor_id, diagnosis, prescription, date)
-        VALUES (%s, %s, %s, %s, CURDATE())
-    """, (patient_id, doctor_id, diagnosis, prescription))
+        INSERT INTO prescriptions (patient_id, doctor_id, diagnosis, prescription, severity, date)
+        VALUES (%s, %s, %s, %s, %s, CURDATE())
+    """, (patient_id, doctor_id, diagnosis, prescription, severity))
     
     db.commit()
 
     return jsonify({"message": "Prescription Added Successfully!"})
 
-# 👤 PATIENT PORTAL WITH OTP
-@app.route('/patient_portal', methods=['GET', 'POST'])
-def patient_portal():
+# 🚑 EMERGENCY ACCESS — PATIENT SPECIFIC (QR SCAN)
+@app.route('/emergency/<patient_id>')
+def emergency_access(patient_id):
 
-    if request.method == 'POST':
+    # 🔎 Check patient exists
+    cursor.execute("SELECT mobile FROM patients WHERE patient_id=%s", (patient_id,))
+    result = cursor.fetchone()
 
-        # STEP 1 → Health ID submitted
-        if 'patient_id' in request.form:
-            patient_id = request.form['patient_id']
+    if not result:
+        return "Patient not found ❌"
 
-            cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (patient_id,))
-            patient = cursor.fetchone()
+    mobile = result[0]
 
-            if patient:
-                otp = random.randint(1000, 9999)
-                session['otp'] = str(otp)
-                session['patient_id'] = patient_id
+    session['patient_id'] = patient_id
 
-                print("Generated OTP:", otp)  # See OTP in terminal
+    # 📱 Generate OTP
+    otp = random.randint(1000, 9999)
+    session['otp'] = str(otp)
 
-                return render_template("verify_otp.html")
+    print("OTP sent to", mobile, ":", otp)
 
-            else:
-                return "Invalid Health ID"
+    # ➜ Go to OTP page
+    return render_template("verify_otp.html")
 
-        # STEP 2 → OTP submitted
-        elif 'entered_otp' in request.form:
-            entered_otp = request.form['entered_otp']
+@app.route('/verify_otp', methods=['POST'])
+def verify_otp():
 
-            if entered_otp == session.get('otp'):
+    entered_otp = request.form['entered_otp']
 
-                patient_id = session.get('patient_id')
+    if entered_otp == session.get('otp'):
 
-                cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (patient_id,))
-                patient = cursor.fetchone()
+        patient_id = session.get('patient_id')
 
-                cursor.execute("SELECT * FROM prescriptions WHERE patient_id=%s", (patient_id,))
-                prescriptions = cursor.fetchall()
+        # Get patient details
+        cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (patient_id,))
+        patient = cursor.fetchone()
 
-                return render_template("patient_records.html",
-                                       patient=patient,
-                                       prescriptions=prescriptions)
+        # Get prescriptions
+        cursor.execute("SELECT * FROM prescriptions WHERE patient_id=%s", (patient_id,))
+        prescriptions = cursor.fetchall()
 
-            else:
-                return "Invalid OTP"
+        # 🔴🟡🟢 Find highest severity
+        severity = "Mild"   # default
 
-    return render_template("patient_portal.html")
+        for p in prescriptions:
+            if p[6] == "Serious":
+                severity = "Serious"
+                break
+            elif p[6] == "Moderate":
+                severity = "Moderate"
+
+        from datetime import date
+        # Calculate age from DOB
+        dob = patient[3]  # YYYY-MM-DD
+        birth_year = int(str(dob).split("-")[0])
+        age = date.today().year - birth_year
+
+        return render_template(
+            "patient_records.html",
+            patient=patient,
+            prescriptions=prescriptions,
+            severity=severity,
+            age=age
+        )
+
+    else:
+        return "Invalid OTP"
+
+@app.route('/resend_otp')
+def resend_otp():
+
+    patient_id = session.get('patient_id')
+
+    if not patient_id:
+        return redirect('/')
+
+    cursor.execute("SELECT mobile FROM patients WHERE patient_id=%s", (patient_id,))
+    result = cursor.fetchone()
+
+    mobile = result[0]
+
+    otp = random.randint(1000, 9999)
+    session['otp'] = str(otp)
+
+    print("NEW OTP sent to", mobile, ":", otp)
+
+    return render_template("verify_otp.html")
+
 if __name__ == '__main__':
    
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
