@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Patient Records - Smart Health Card</title>
+<title>Patient History - Smart Health Card</title>
+
 <style>
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    background-color: #eef1f5;
+    background: #eef1f5;
 }
 
 .header {
@@ -18,148 +19,175 @@ body {
     font-weight: bold;
 }
 
-.wrapper {
-    display: flex;
-    justify-content: center;
-    padding: 40px 20px;
-}
-
-.container {
+/* Patient Info */
+.patient-card {
+    background: #f4f6f9;
     width: 85%;
-    max-width: 900px;
+    margin: 30px auto;
+    padding: 25px 35px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-h2 {
-    color: #58a55c;
-    margin-bottom: 25px;
-    border-bottom: 2px solid #69b36d;
-    padding-bottom: 10px;
-}
-
-.card {
-    background: #f7f7f7;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-    margin-bottom: 25px;
+.patient-name {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2c3e50;
 }
 
 .patient-info {
-    background: #e8f0fe;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 25px;
-    border-left: 5px solid #69b36d;
-}
-
-.patient-info p {
-    margin: 10px 0;
-    font-size: 16px;
-}
-
-.patient-info strong {
-    color: #333;
-    min-width: 120px;
-    display: inline-block;
-}
-
-.prescription-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: transform 0.2s;
-}
-
-.prescription-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.prescription-card p {
-    margin: 8px 0;
-}
-
-.prescription-card strong {
-    color: #58a55c;
-    min-width: 100px;
-    display: inline-block;
-}
-
-.prescription-date {
-    color: #888;
-    font-size: 14px;
-    text-align: right;
+    font-size: 18px;
+    color: #555;
     margin-top: 10px;
-    border-top: 1px dashed #ccc;
-    padding-top: 8px;
+    line-height: 1.8;
 }
 
-.no-data {
-    text-align: center;
-    color: #777;
-    padding: 40px;
-    font-size: 16px;
-    background: #f9f9f9;
-    border-radius: 8px;
+/* Severity Box */
+.severity-box {
+    width: 85%;
+    margin: 25px auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-hr {
-    border: none;
-    border-top: 1px solid #ddd;
-    margin: 20px 0;
+.severity-header {
+    background: linear-gradient(to right, #e53935, #ff6b6b);
+    color: white;
+    padding: 20px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.severity-body {
+    background: linear-gradient(to right, #ef5350, #ff8a80);
+    color: white;
+    padding: 20px 30px;
+    font-size: 30px;
+    line-height: 2;
+}
+
+.critical-note {
+    background: #fbe9e7;
+    color: #7f1d1d;
+    padding: 18px 30px;
+    font-size: 20px;
+}
+
+/* Reports */
+.reports {
+    width: 85%;
+    margin: 35px auto;
+}
+
+.reports h2 {
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.report-list {
+    font-size: 20px;
+    line-height: 2.2;
+}
+
+/* 🔴 Serious — RED */
+.serious {
+    background: linear-gradient(to right, #e53935, #ff6b6b);
+    color: white;
+}
+
+.serious-body {
+    background: linear-gradient(to right, #ef5350, #ff8a80);
+    color: white;
+}
+
+/* 🔵 Moderate — BLUE */
+.moderate {
+    background: linear-gradient(to right, #1e88e5, #64b5f6);
+    color: white;
+}
+
+.moderate-body {
+    background: linear-gradient(to right, #42a5f5, #90caf9);
+    color: white;
+}
+
+/* 🟢 Mild / Normal — GREEN */
+.mild {
+    background: linear-gradient(to right, #43a047, #81c784);
+    color: white;
+}
+
+.mild-body {
+    background: linear-gradient(to right, #66bb6a, #a5d6a7);
+    color: white;
 }
 </style>
 </head>
+
 <body>
 
-<div class="header">Smart Health Card - Patient Records</div>
+<div class="header">Smart Health Card - Patient History</div>
 
-<div class="wrapper">
-    <div class="container">
+{% if patient %}
 
-        <div class="card">
-            <h2>Patient Details</h2>
-            
-            {% if patient %}
-            <div class="patient-info">
-                <p><strong>Name:</strong> {{patient[2]}}</p>
-                <p><strong>DOB:</strong> {{patient[3]}}</p>
-                <p><strong>Mobile:</strong> {{patient[4]}}</p>
-                <p><strong>Health ID:</strong> {{patient[1]}}</p>
-            </div>
-            {% else %}
-            <div class="no-data">
-                <p>No patient information available.</p>
-            </div>
-            {% endif %}
-        </div>
+<!-- Patient Info -->
+<div class="patient-card">
+    <div class="patient-name">{{patient[2]}}</div>
 
-        <div class="card">
-            <h2>Prescriptions</h2>
-            
-            {% if prescriptions %}
-                {% for p in prescriptions %}
-                <div class="prescription-card">
-                    <p><strong>Doctor ID:</strong> {{p[2]}}</p>
-                    <p><strong>Diagnosis:</strong> {{p[3]}}</p>
-                    <p><strong>Prescription:</strong> {{p[4]}}</p>
-                    <div class="prescription-date">
-                        <strong>Date:</strong> {{p[5]}}
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="no-data">
-                    <p>No prescriptions found for this patient.</p>
-                </div>
-            {% endif %}
-        </div>
-
+    <div class="patient-info">
+        Age: {{age}} <br>
+        Mobile no: {{patient[4]}} <br>
+        Health ID: {{patient[1]}}
     </div>
 </div>
+
+<!-- Severity Section -->
+<div class="severity-box">
+
+    <div class="severity-header
+        {% if severity == 'Serious' %}
+            serious
+        {% elif severity == 'Moderate' %}
+            moderate
+        {% else %}
+            mild
+        {% endif %}
+    ">
+        Health Record
+    </div>
+
+    <div class="severity-body
+        {% if severity == 'Serious' %}
+            serious-body
+        {% elif severity == 'Moderate' %}
+            moderate-body
+        {% else %}
+            mild-body
+        {% endif %}
+    ">
+        {% for p in prescriptions %}
+            <B>{{p[3]}}</B><br>
+        {% endfor %}
+    </div>
+
+</div>
+
+<!-- Recent Reports -->
+<div class="reports">
+    <h2>Recent Reports & Prescriptions:</h2>
+
+    <div class="report-list">
+        {% for p in prescriptions %}
+            • Medication: {{p[4]}} <br>
+            • Date: {{p[5]}} <br><br>
+        {% endfor %}
+    </div>
+</div>
+
+{% else %}
+<p style="text-align:center; margin-top:50px;">No patient data found.</p>
+{% endif %}
 
 </body>
 </html>

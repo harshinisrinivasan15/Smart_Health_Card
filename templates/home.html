@@ -1,82 +1,150 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Smart Health Card</title>
+<title>Smart Health Card</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #e9ecef;
-        }
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #eef1f5;
+}
 
-        /* Header */
-        header {
-            background-color: #66bb6a;
-            color: white;
-            text-align: center;
-            padding: 18px;
-            font-size: 28px;
-            font-weight: bold;
-        }
+/* Header */
+.header {
+    background: #69b36d;
+    color: white;
+    padding: 18px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    position: relative;
+}
 
-        /* Center container */
-        .container {
-            width: 85%;
-            margin: 50px auto;
-            text-align: center;
-        }
+/* ☰ Menu icon */
+.menu-btn {
+    position: absolute;
+    left: 15px;
+    top: 18px;
+    font-size: 26px;
+    cursor: pointer;
+    color: black;
+}
 
-        h2 {
-            margin-bottom: 35px;
-        }
+/* Sidebar */
+.sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    background: white;
+    overflow-x: hidden;
+    transition: 0.3s;
+    padding-top: 10px;
+}
 
-        /* Portal cards */
-        .card {
-            display: inline-block;
-            width: 260px;
-            background: #f5f5f5;
-            padding: 30px;
-            margin: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: 0.3s;
-        }
+.sidebar a {
+    padding: 12px 20px;
+    display: block;
+    color: black;
+    text-decoration: none;
+    font-size: 18px;
+}
 
-        .card:hover {
-            transform: translateY(-6px);
-        }
+.sidebar a:hover {
+    background:  #e0e0e0;
+}
 
-        .card a {
-            text-decoration: none;
-            color: black;
-            font-size: 20px;
-            font-weight: bold;
-        }
-    </style>
+/* Center card */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+}
+
+.card {
+    background: white;
+    padding: 40px;
+    width: 420px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card h2 {
+    margin-bottom: 25px;
+}
+
+/* QR box */
+.qr-box {
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.qr-box img {
+    width: 160px;
+}
+
+.qr-box p {
+    margin-top: -15px;
+}
+
+.btn {
+    background: #69b36d;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #4f9a54;
+}
+</style>
 </head>
 
 <body>
 
-<header>Smart Health Card</header>
+<div class="header">
+    <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+    Smart Health Card
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+    <a href="/admin">👤 Admin Portal</a>
+    <a href="/doctorlogin">🩺 Doctor Portal</a>
+</div>
 
 <div class="container">
-
-    <h2>Select Portal</h2>
-
     <div class="card">
-        <a href="/admin">🛠️ Admin Portal</a>
-    </div>
+        <h2>Patient Health Card Access</h2>
 
-    <div class="card">
-        <a href="/patient_portal">👤 Patient Portal</a>
-    </div>
+        <div class="qr-box">
+            <p>Scan QR Code</p>
+            <img src="{{ url_for('static', filename='qr_codes/' + latest_qr) }}" alt="PATIENT QR">
+        </div>
 
-    <div class="card">
-        <a href="/doctorlogin">🩺 Doctor Portal</a>
+        <p style="color: gray; font-size: 14px;">
+            Scan the patient's Smart Health Card QR to send OTP automatically
+        </p>
     </div>
-
 </div>
+
+<script>
+function toggleSidebar() {
+    var sidebar = document.getElementById("sidebar");
+
+    if (sidebar.style.width === "220px") {
+        sidebar.style.width = "0";
+    } else {
+        sidebar.style.width = "220px";
+    }
+}
+</script>
 
 </body>
 </html>
