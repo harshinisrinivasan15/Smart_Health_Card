@@ -11,7 +11,7 @@ app.secret_key = "healthcard_secret_key"
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="root",
+    password="Dharsh!7",
     database="smart_health_card"
 )
 cursor = db.cursor()
@@ -61,7 +61,7 @@ def adminpatient():
         db.commit()
 
         # Generate QR
-        url = f"http://192.168.1.12:5000/emergency/{patient_id}"
+        url = f"https://courageous-dorene-unsickened.ngrok-free.dev/emergency/{patient_id}"
         qr = qrcode.make(url)
         qr.save(f"static/qr_codes/{patient_id}.png")
 
@@ -237,6 +237,47 @@ def verify_otp():
     else:
         return "Invalid OTP"
 
+
+# 🚑 SKIP OTP (Emergency Access)
+@app.route('/skip_otp')
+def skip_otp():
+
+    patient_id = session.get('patient_id')
+
+    if not patient_id:
+        return redirect('/')
+
+    # Get patient details
+    cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (patient_id,))
+    patient = cursor.fetchone()
+
+    # Get prescriptions
+    cursor.execute("SELECT * FROM prescriptions WHERE patient_id=%s", (patient_id,))
+    prescriptions = cursor.fetchall()
+
+    # 🔴🟡🟢 Find highest severity
+    severity = "Mild"
+
+    for p in prescriptions:
+        if p[6] == "Serious":
+            severity = "Serious"
+            break
+        elif p[6] == "Moderate":
+            severity = "Moderate"
+
+    from datetime import date
+    dob = patient[3]
+    birth_year = int(str(dob).split("-")[0])
+    age = date.today().year - birth_year
+
+    return render_template(
+        "patient_records.html",
+        patient=patient,
+        prescriptions=prescriptions,
+        severity=severity,
+        age=age
+    )
+
 @app.route('/resend_otp')
 def resend_otp():
 
@@ -256,6 +297,8 @@ def resend_otp():
     print("NEW OTP sent to", mobile, ":", otp)
 
     return render_template("verify_otp.html")
+
+    
 
 if __name__ == '__main__':
    
