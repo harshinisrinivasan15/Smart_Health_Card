@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Patient Portal - Smart Health Card</title>
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #eef1f5;
+}
+
+.header {
+    background: #69b36d;
+    color: white;
+    padding: 18px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 80px;
+}
+
+.card {
+    background: white;
+    padding: 40px;
+    width: 420px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card h2 {
+    color: #58a55c;
+    margin-bottom: 25px;
+}
+
+.upload-box {
+    border: 2px dashed #69b36d;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+.upload-box p {
+    color: #888;
+    font-size: 15px;
+}
+
+input[type="file"] {
+    margin: 15px 0;
+}
+
+.btn {
+    background: #69b36d;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.btn:hover {
+    background: #4f9a54;
+}
+
+.error {
+    color: red;
+    margin-top: 15px;
+    font-size: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Smart Health Card - Patient Portal</div>
+
+<div class="wrapper">
+    <div class="card">
+        <h2>Upload Your QR Code</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="upload-box">
+                <p>📤 Upload your Smart Health Card QR image</p>
+                <input type="file" name="qr_image" accept="image/*" required>
+            </div>
+
+            <button type="submit" class="btn">View My Records</button>
+        </form>
+
+        {% if error %}
+        <p class="error">⚠️ {{ error }}</p>
+        {% endif %}
+
+    </div>
+</div>
+
+</body>
+</html>

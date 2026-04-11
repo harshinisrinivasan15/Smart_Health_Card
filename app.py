@@ -11,7 +11,7 @@ app.secret_key = "healthcard_secret_key"
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="Dharsh!7",
+    password="Hanii@31_4",
     database="smart_health_card"
 )
 cursor = db.cursor()
@@ -61,7 +61,7 @@ def adminpatient():
         db.commit()
 
         # Generate QR
-        url = f"https://courageous-dorene-unsickened.ngrok-free.dev/emergency/{patient_id}"
+        url = f"http://10.88.9.200:5000/emergency/{patient_id}"
         qr = qrcode.make(url)
         qr.save(f"static/qr_codes/{patient_id}.png")
 
@@ -298,8 +298,75 @@ def resend_otp():
 
     return render_template("verify_otp.html")
 
-    
+@app.route('/regenerate_qr')
+def regenerate_qr():
+    cursor.execute("SELECT patient_id FROM patients")
+    patients = cursor.fetchall()
+    for p in patients:
+        patient_id = p[0]
+        url = f"http://10.88.9.200:5000/emergency/{patient_id}"
+        qr = qrcode.make(url)
+        qr.save(f"static/qr_codes/{patient_id}.png")
+    return "All QR codes regenerated! ✅"
+
+# 🏥 PATIENT PORTAL — Upload QR
+@app.route('/patient_portal', methods=['GET', 'POST'])
+def patient_portal():
+    if request.method == 'POST':
+        qr_file = request.files['qr_image']
+        
+        # Save uploaded QR temporarily
+        qr_path = f"static/temp_qr.png"
+        qr_file.save(qr_path)
+
+        # Read QR code
+        import cv2
+        from pyzbar.pyzbar import decode
+        img = cv2.imread(qr_path)
+        decoded = decode(img)
+
+        if not decoded:
+            return render_template("patient_portal.html", error="Could not read QR code!")
+
+        # Extract patient_id from URL in QR
+        qr_url = decoded[0].data.decode("utf-8")
+        patient_id = qr_url.split("/")[-1]
+
+        # Fetch patient
+        cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (patient_id,))
+        patient = cursor.fetchone()
+
+        if not patient:
+            return render_template("patient_portal.html", error="Patient not found!")
+
+        # Fetch prescriptions
+        cursor.execute("SELECT * FROM prescriptions WHERE patient_id=%s", (patient_id,))
+        prescriptions = cursor.fetchall()
+
+        # Severity
+        severity = "Mild"
+        for p in prescriptions:
+            if p[6] == "Serious":
+                severity = "Serious"
+                break
+            elif p[6] == "Moderate":
+                severity = "Moderate"
+
+        from datetime import date
+        dob = patient[3]
+        birth_year = int(str(dob).split("-")[0])
+        age = date.today().year - birth_year
+
+        return render_template(
+            "patient_records.html",
+            patient=patient,
+            prescriptions=prescriptions,
+            severity=severity,
+            age=age
+        )
+
+    return render_template("patient_portal.html", error=None)
 
 if __name__ == '__main__':
-   
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0")    
+
