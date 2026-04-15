@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, send_file, session
+from werkzeug.utils import secure_filename
 import random
 import mysql.connector
 import qrcode
@@ -6,12 +7,14 @@ import os
 
 app = Flask(__name__)
 app.secret_key = "healthcard_secret_key"
+UPLOAD_FOLDER = "static/scans"
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # MySQL connection
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="Hanii@31_4",
+    password="root",
     database="smart_health_card"
 )
 cursor = db.cursor()
@@ -160,11 +163,27 @@ def add_prescription(doctor_id):
     prescription = request.form['prescription']
     severity = request.form['severity']
 
+    # Save Prescription
     cursor.execute("""
-        INSERT INTO prescriptions (patient_id, doctor_id, diagnosis, prescription, severity, date)
+        INSERT INTO prescriptions
+        (patient_id, doctor_id, diagnosis, prescription, severity, date)
         VALUES (%s, %s, %s, %s, %s, CURDATE())
     """, (patient_id, doctor_id, diagnosis, prescription, severity))
-    
+
+    # Scan Upload
+    file = request.files['scan_file']
+
+    if file and file.filename != "":
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        cursor.execute("""
+            INSERT INTO scan_reports
+            (patient_id, doctor_id, report_name, upload_date)
+            VALUES (%s, %s, %s, CURDATE())
+        """, (patient_id, doctor_id, filename))
+
     db.commit()
 
     return jsonify({"message": "Prescription Added Successfully!"})
@@ -210,6 +229,10 @@ def verify_otp():
         cursor.execute("SELECT * FROM prescriptions WHERE patient_id=%s", (patient_id,))
         prescriptions = cursor.fetchall()
 
+        # Get scan reports
+        cursor.execute("SELECT * FROM scan_reports WHERE patient_id=%s", (patient_id,))
+        scans = cursor.fetchall()
+
         # 🔴🟡🟢 Find highest severity
         severity = "Mild"   # default
 
@@ -230,6 +253,7 @@ def verify_otp():
             "patient_records.html",
             patient=patient,
             prescriptions=prescriptions,
+            scans=scans,
             severity=severity,
             age=age
         )
@@ -255,6 +279,9 @@ def skip_otp():
     cursor.execute("SELECT * FROM prescriptions WHERE patient_id=%s", (patient_id,))
     prescriptions = cursor.fetchall()
 
+    cursor.execute("SELECT * FROM scan_reports WHERE patient_id=%s", (patient_id,))
+    scans = cursor.fetchall()
+
     # 🔴🟡🟢 Find highest severity
     severity = "Mild"
 
@@ -274,6 +301,7 @@ def skip_otp():
         "patient_records.html",
         patient=patient,
         prescriptions=prescriptions,
+        scans=scans,
         severity=severity,
         age=age
     )
@@ -304,7 +332,7 @@ def regenerate_qr():
     patients = cursor.fetchall()
     for p in patients:
         patient_id = p[0]
-        url = f"http://10.88.9.200:5000/emergency/{patient_id}"
+        url = f"https://rectified-nastily-datebook.ngrok-free.dev/emergency/{patient_id}"
         qr = qrcode.make(url)
         qr.save(f"static/qr_codes/{patient_id}.png")
     return "All QR codes regenerated! ✅"
@@ -343,6 +371,9 @@ def patient_portal():
         cursor.execute("SELECT * FROM prescriptions WHERE patient_id=%s", (patient_id,))
         prescriptions = cursor.fetchall()
 
+        cursor.execute("SELECT * FROM scan_reports WHERE patient_id=%s", (patient_id,))
+        scans = cursor.fetchall()
+
         # Severity
         severity = "Mild"
         for p in prescriptions:
@@ -361,6 +392,7 @@ def patient_portal():
             "patient_records.html",
             patient=patient,
             prescriptions=prescriptions,
+            scans=scans,
             severity=severity,
             age=age
         )

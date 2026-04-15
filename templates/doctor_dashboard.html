@@ -116,11 +116,14 @@
         <!-- Add Prescription -->
         <div class="card">
             <h3>Add Prescription</h3>
-            <form id="prescriptionForm">
+            <form id="prescriptionForm" enctype="multipart/form-data">
     <input type="hidden" name="patient_id" value="{{ patient[1] }}">
 
     <label>Diagnosis</label><br>
     <textarea name="diagnosis" required></textarea><br>
+
+    <label>Upload Scan Report</label><br>
+    <input type="file" name="scan_file"><br><br>
 
     <label>Prescription</label><br>
     <textarea name="prescription" required></textarea><br>

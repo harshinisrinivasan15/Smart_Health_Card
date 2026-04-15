@@ -185,6 +185,39 @@ body {
     </div>
 </div>
 
+<div class="reports">
+    <h2>Scan Reports:</h2>
+
+    <div class="report-list">
+
+        {% for s in scans %}
+
+        {% if '.pdf' in s[3] %}
+        <a href="/static/scans/{{ s[3] }}" target="_blank">View PDF</a>
+
+        {% else %}
+        <a href="/static/scans/{{ s[3] }}" target="_blank">
+        <img src="/static/scans/{{ s[3] }}"
+         style="width:100%;
+                max-width:650px;
+                height:auto;
+                border-radius:12px;
+                box-shadow:0 4px 12px rgba(0,0,0,0.25);
+                margin-top:10px;
+                margin-bottom:10px;
+                cursor:pointer;">
+        </a>
+        {% endif %}
+
+        <br>
+        Uploaded Date: {{ s[4] }}
+        <br><br>
+
+        {% endfor %}
+
+    </div>
+</div>
+
 {% else %}
 <p style="text-align:center; margin-top:50px;">No patient data found.</p>
 {% endif %}
