@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, send_file, session
 from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request, redirect, send_file, session, jsonify
 import random
 import mysql.connector
 import qrcode
@@ -19,25 +20,23 @@ db = mysql.connector.connect(
 )
 cursor = db.cursor()
 
-# 🏠 FRONT PAGE (3 portals)
+
+# 🏠 FRONT PAGE (SHOW 3 RECENT QR)
 @app.route('/')
 def home():
 
-    # Get most recently added patient
-    cursor.execute("SELECT patient_id FROM patients ORDER BY id DESC LIMIT 1")
-    latest_patient = cursor.fetchone()
+    # 🔥 Get last 3 patients
+    cursor.execute("SELECT patient_id FROM patients ORDER BY id DESC LIMIT 3")
+    recent_patients = cursor.fetchall()
 
-    if latest_patient:
-        latest_qr = latest_patient[0] + ".png"
-    else:
-        latest_qr = "PAT001.png"  # default if no patient
+    return render_template("home.html", recent_patients=recent_patients)
 
-    return render_template("home.html", latest_qr=latest_qr)
 
 # 🛠 ADMIN DASHBOARD
 @app.route('/admin')
 def admin_dashboard():
     return render_template("admin_dashboard.html")
+
 
 # 👤 PATIENT DETAILS
 @app.route('/adminpatient', methods=['GET', 'POST'])
@@ -63,14 +62,14 @@ def adminpatient():
         cursor.execute(sql, (patient_id, name, dob, mobile, height, weight, reason, doctor))
         db.commit()
 
-        # Generate QR
-        url = f"http://10.88.9.200:5000/emergency/{patient_id}"
+        # 🔥 QR GENERATION WITH NGROK
+        url = f"https://rectified-nastily-datebook.ngrok-free.dev/emergency/{patient_id}"
         qr = qrcode.make(url)
         qr.save(f"static/qr_codes/{patient_id}.png")
 
         return redirect('/adminpatient')
 
-    # Fetch available doctors for dropdown
+    # Fetch available doctors
     cursor.execute("SELECT doctor_id, name FROM doctors WHERE status='Available'")
     doctor_list = cursor.fetchall()
 
@@ -78,16 +77,15 @@ def adminpatient():
     cursor.execute("SELECT * FROM patients")
     data = cursor.fetchall()
 
-    return render_template(
-        "patient_details.html",
-        patients=data,
-        doctors=doctor_list
-    )
+    return render_template("patient_details.html", patients=data, doctors=doctor_list)
 
+
+# 📥 DOWNLOAD QR
 @app.route('/download/<patient_id>')
 def download_card(patient_id):
     path = f"static/qr_codes/{patient_id}.png"
     return send_file(path, as_attachment=True)
+
 
 # 🩺 DOCTOR AVAILABILITY
 @app.route('/admindoctor', methods=['GET', 'POST'])
@@ -98,7 +96,6 @@ def admindoctor():
         specialization = request.form['specialization']
         status = request.form['status']
 
-        # Generate Doctor ID
         cursor.execute("SELECT COUNT(*) FROM doctors")
         count = cursor.fetchone()[0] + 1
         doctor_id = f"DOC{count:03}"
@@ -115,20 +112,21 @@ def admindoctor():
     data = cursor.fetchall()
     return render_template("doctor_availability.html", doctors=data)
 
+
 @app.route('/delete_doctor/<int:id>')
 def delete_doctor(id):
-    sql = "DELETE FROM doctors WHERE id=%s"
-    cursor.execute(sql, (id,))
+    cursor.execute("DELETE FROM doctors WHERE id=%s", (id,))
     db.commit()
     return redirect('/admindoctor')
 
-#Doctor Login
+
+# 🔐 DOCTOR LOGIN
 @app.route('/doctorlogin', methods=['GET', 'POST'])
 def doctor_login():
     if request.method == 'POST':
         email = request.form['email']
 
-        cursor.execute("SELECT doctor_id, name FROM doctors WHERE email=%s", (email,))
+        cursor.execute("SELECT doctor_id FROM doctors WHERE email=%s", (email,))
         doctor = cursor.fetchone()
 
         if doctor:
@@ -138,7 +136,8 @@ def doctor_login():
 
     return render_template("doctor_login.html")
 
-    # Doctor Dashboard
+
+# 👨‍⚕️ DOCTOR DASHBOARD
 @app.route('/doctor/<doctor_id>', methods=['GET', 'POST'])
 def doctor_dashboard(doctor_id):
     patient = None
@@ -153,9 +152,9 @@ def doctor_dashboard(doctor_id):
                            patient=patient,
                            doctor_id=doctor_id,
                            success=success)
-# Prescription Adding
-from flask import jsonify
 
+
+# 💊 ADD PRESCRIPTION
 @app.route('/add_prescription/<doctor_id>', methods=['POST'])
 def add_prescription(doctor_id):
     patient_id = request.form['patient_id']
@@ -188,30 +187,28 @@ def add_prescription(doctor_id):
 
     return jsonify({"message": "Prescription Added Successfully!"})
 
-# 🚑 EMERGENCY ACCESS — PATIENT SPECIFIC (QR SCAN)
+
+# 🚑 EMERGENCY ACCESS (QR)
 @app.route('/emergency/<patient_id>')
 def emergency_access(patient_id):
 
-    # 🔎 Check patient exists
     cursor.execute("SELECT mobile FROM patients WHERE patient_id=%s", (patient_id,))
     result = cursor.fetchone()
 
     if not result:
         return "Patient not found ❌"
 
-    mobile = result[0]
-
     session['patient_id'] = patient_id
 
-    # 📱 Generate OTP
     otp = random.randint(1000, 9999)
     session['otp'] = str(otp)
 
-    print("OTP sent to", mobile, ":", otp)
+    print("OTP:", otp)
 
-    # ➜ Go to OTP page
     return render_template("verify_otp.html")
 
+
+# 🔑 VERIFY OTP
 @app.route('/verify_otp', methods=['POST'])
 def verify_otp():
 
@@ -262,20 +259,22 @@ def verify_otp():
         return "Invalid OTP"
 
 
-# 🚑 SKIP OTP (Emergency Access)
+# 🚑 SKIP OTP
 @app.route('/skip_otp')
 def skip_otp():
+    return show_patient_records()
 
+
+# 📄 COMMON FUNCTION
+def show_patient_records():
     patient_id = session.get('patient_id')
 
     if not patient_id:
         return redirect('/')
 
-    # Get patient details
     cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (patient_id,))
     patient = cursor.fetchone()
 
-    # Get prescriptions
     cursor.execute("SELECT * FROM prescriptions WHERE patient_id=%s", (patient_id,))
     prescriptions = cursor.fetchall()
 
@@ -284,7 +283,6 @@ def skip_otp():
 
     # 🔴🟡🟢 Find highest severity
     severity = "Mild"
-
     for p in prescriptions:
         if p[6] == "Serious":
             severity = "Serious"
@@ -306,6 +304,8 @@ def skip_otp():
         age=age
     )
 
+
+# 🔄 RESEND OTP
 @app.route('/resend_otp')
 def resend_otp():
 
@@ -314,15 +314,10 @@ def resend_otp():
     if not patient_id:
         return redirect('/')
 
-    cursor.execute("SELECT mobile FROM patients WHERE patient_id=%s", (patient_id,))
-    result = cursor.fetchone()
-
-    mobile = result[0]
-
     otp = random.randint(1000, 9999)
     session['otp'] = str(otp)
 
-    print("NEW OTP sent to", mobile, ":", otp)
+    print("NEW OTP:", otp)
 
     return render_template("verify_otp.html")
 
@@ -337,68 +332,6 @@ def regenerate_qr():
         qr.save(f"static/qr_codes/{patient_id}.png")
     return "All QR codes regenerated! ✅"
 
-# 🏥 PATIENT PORTAL — Upload QR
-@app.route('/patient_portal', methods=['GET', 'POST'])
-def patient_portal():
-    if request.method == 'POST':
-        qr_file = request.files['qr_image']
-        
-        # Save uploaded QR temporarily
-        qr_path = f"static/temp_qr.png"
-        qr_file.save(qr_path)
-
-        # Read QR code
-        import cv2
-        from pyzbar.pyzbar import decode
-        img = cv2.imread(qr_path)
-        decoded = decode(img)
-
-        if not decoded:
-            return render_template("patient_portal.html", error="Could not read QR code!")
-
-        # Extract patient_id from URL in QR
-        qr_url = decoded[0].data.decode("utf-8")
-        patient_id = qr_url.split("/")[-1]
-
-        # Fetch patient
-        cursor.execute("SELECT * FROM patients WHERE patient_id=%s", (patient_id,))
-        patient = cursor.fetchone()
-
-        if not patient:
-            return render_template("patient_portal.html", error="Patient not found!")
-
-        # Fetch prescriptions
-        cursor.execute("SELECT * FROM prescriptions WHERE patient_id=%s", (patient_id,))
-        prescriptions = cursor.fetchall()
-
-        cursor.execute("SELECT * FROM scan_reports WHERE patient_id=%s", (patient_id,))
-        scans = cursor.fetchall()
-
-        # Severity
-        severity = "Mild"
-        for p in prescriptions:
-            if p[6] == "Serious":
-                severity = "Serious"
-                break
-            elif p[6] == "Moderate":
-                severity = "Moderate"
-
-        from datetime import date
-        dob = patient[3]
-        birth_year = int(str(dob).split("-")[0])
-        age = date.today().year - birth_year
-
-        return render_template(
-            "patient_records.html",
-            patient=patient,
-            prescriptions=prescriptions,
-            scans=scans,
-            severity=severity,
-            age=age
-        )
-
-    return render_template("patient_portal.html", error=None)
-
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")    
-
+    app.run(debug=True, host="0.0.0.0")
+    

@@ -65,7 +65,7 @@ body {
 .card {
     background: white;
     padding: 40px;
-    width: 420px;
+    width: 600px;  /* increased width */
     border-radius: 12px;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -75,19 +75,29 @@ body {
     margin-bottom: 25px;
 }
 
+/* QR section */
+.qr-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
 /* QR box */
 .qr-box {
+    background: #f9f9f9;
     padding: 15px;
-    border-radius: 5px;
-    margin-bottom: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .qr-box img {
-    width: 160px;
+    width: 140px;
 }
 
 .qr-box p {
-    margin-top: -15px;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
 .btn {
@@ -117,20 +127,26 @@ body {
 <div id="sidebar" class="sidebar">
     <a href="/admin">👤 Admin Portal</a>
     <a href="/doctorlogin">🩺 Doctor Portal</a>
-    <a href="/patient_portal">🏥 Patient Portal</a>
 </div>
 
 <div class="container">
     <div class="card">
         <h2>Patient Health Card Access</h2>
 
-        <div class="qr-box">
-            <p>Scan QR Code</p>
-            <img src="{{ url_for('static', filename='qr_codes/' + latest_qr) }}" alt="PATIENT QR">
+        <p><b>Scan Any QR Code</b></p>
+
+        <!-- 🔥 MULTIPLE QR DISPLAY -->
+        <div class="qr-container">
+            {% for p in recent_patients %}
+            <div class="qr-box">
+                <p>{{ p[0] }}</p>
+                <img src="{{ url_for('static', filename='qr_codes/' + p[0] + '.png') }}" alt="QR">
+            </div>
+            {% endfor %}
         </div>
 
-        <p style="color: gray; font-size: 14px;">
-            Scan the patient's Smart Health Card QR to send OTP automatically
+        <p style="color: gray; font-size: 14px; margin-top:20px;">
+            Scan any patient's Smart Health Card QR to send OTP automatically
         </p>
     </div>
 </div>
